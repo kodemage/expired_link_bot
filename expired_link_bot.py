@@ -30,9 +30,11 @@ import re
 import sys
 import time
 import urllib2
-
-MAX_SUBMISSIONS = 200 # Number of submissions to examine; size of caches
-DRY_RUN = True        # By default we don't actually change anything, use -x at the command line to override this
+ 
+MAX_SUBMISSIONS = 200              # Number of submissions to examine; size of caches
+DRY_RUN = True                     # Use -x at the command line to override this
+USERNAME = expired_link_bot        # Use -u at the command line to override this
+DIGEST_RECIPIENT = "/r/FreeEbooks" # Use -r at the command line to override this
 
 NEEDS_REVIEW_CACHE_FILE = "needs_review_cache.txt"
 ALREADY_EXPIRED_CACHE_FILE = "already_expired_cache.txt"
