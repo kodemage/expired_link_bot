@@ -31,8 +31,8 @@ import sys
 import time
 import urllib2
 
-MAX_SUBMISSIONS = 200  # Number of submissions to examine; size of caches
-DRY_RUN = True
+MAX_SUBMISSIONS = 200 # Number of submissions to examine; size of caches
+DRY_RUN = True        # By default we don't actually change anything, use -x at the command line to override this
 
 NEEDS_REVIEW_CACHE_FILE = "needs_review_cache.txt"
 ALREADY_EXPIRED_CACHE_FILE = "already_expired_cache.txt"
@@ -56,15 +56,17 @@ argv = sys.argv[1:]
 argv.reverse()
 while argv:
     arg = argv.pop
-    if arg == '-u': USERNAME = argv.pop
+    if arg == '-u': USERNAME = argv.pop          
     elif arg == '-p': PASSWORD = argv.pop
     elif arg == '-m': DIGEST_RECIPIENT = argv.pop
     elif arg == '-r': SUBREDDIT = argv.pop
     elif arg == '-x': DRY_RUN = False
-    elif arg == '-v': VERBOSE = True #notimplemented
-    elif arg == '-q': QUIET = True
-#    elif arg == '-s' && int(argv[0]) : MAX_SUBMISSIONS = argv.pop
-    else sys.exit(2)
+    elif arg == '-v': VERBOSE = True #Not Implemented
+    elif arg == '-q': QUIET = True   #Dangerous?
+#    elif arg == '-?' or '-h' or '-H': print usage example 
+#        sys.exit(1)
+#    elif arg == '-s' && int(argv[0]) : MAX_SUBMISSIONS = argv.pop #what happens if switch is set as "-s 0" ?
+    else sys.exit(2) #command syntax error on unknown command line option
 
 def GetPriceSelector(url):
   """
@@ -294,8 +296,8 @@ def RunIteration(r):
   modified_submissions, needs_review_submissions = CheckSubmissions(subreddit)
   # We no longer use the detailed digest of modified submissions, but I leave
   # it here in case we ever need it again.
-  if not DRY_RUN:
-    # Just tell the mods to look at the mod log to see what was expired.
+
+  if not DRY_RUN: # Just tell the mods to look at the mod log to see what was expired.
     if len(modified_submissions) != 1:
       plural = "s"
     else:
@@ -313,6 +315,7 @@ def RunIteration(r):
     # The list of things the bot would have expired is not in the moderation
     # log because no changes were actually made. Instead, include the whole
     # list in the digest.
+    # I think this is where we'd need to implement VERBOSE
     modified_digest = MakeDigest(
         modified_submissions,
         (lambda sub: "#%d: [%s](%s) (%s)" %
