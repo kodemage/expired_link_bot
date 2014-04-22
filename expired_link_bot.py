@@ -31,19 +31,8 @@ import sys
 import time
 import urllib2
 
-argv = sys.argv[1:]
-argv.reverse
-while xx = argv.pop:
-    if xx == '-u': USERNAME = argv.pop
-    elif xx == '-p': PASSWORD = argv.pop
-    elif xx == '-m': DIGEST_RECIPIENT = argv.pop
-    elif xx == '-r': SUBREDDIT = argv.pop
-    elif xx == '-x': DRY_RUN = False
-    elif xx == '-v': VERBOSE = True
-    elif xx == '-q': QUIET = True
-    elif xx == '-s' && argv[0] == '^\d+$': MAX_SUBMISSIONS = argv.pop
-      
-if not MAX_SUBMISSIONS: MAX_SUBMISSIONS == 200  # Number of submissions to examine; size of caches
+MAX_SUBMISSIONS = 200  # Number of submissions to examine; size of caches
+DRY_RUN = True
 
 NEEDS_REVIEW_CACHE_FILE = "needs_review_cache.txt"
 ALREADY_EXPIRED_CACHE_FILE = "already_expired_cache.txt"
@@ -54,6 +43,7 @@ EXPIRED_CSS_CLASS = "closed"
 # Note that this is a template. You need to supply the current price of the
 # book and the permalink to the Reddit submission for this comment to make
 # sense to readers.
+
 EXPIRED_MESSAGE = u"""
 This link points to an ebook that is no longer free (current price: %s), and
 consequently has been marked as expired.
@@ -61,6 +51,20 @@ consequently has been marked as expired.
 I am a bot. If I have made a mistake, please [message the
 moderators](http://www.reddit.com/message/compose?to=/r/FreeEBOOKS&subject=expired_link_bot&message=%s).
 """
+
+argv = sys.argv[1:]
+argv.reverse()
+while argv:
+    arg = argv.pop
+    if arg == '-u': USERNAME = argv.pop
+    elif arg == '-p': PASSWORD = argv.pop
+    elif arg == '-m': DIGEST_RECIPIENT = argv.pop
+    elif arg == '-r': SUBREDDIT = argv.pop
+    elif arg == '-x': DRY_RUN = False
+    elif arg == '-v': VERBOSE = True #notimplemented
+    elif arg == '-q': QUIET = True
+#    elif arg == '-s' && int(argv[0]) : MAX_SUBMISSIONS = argv.pop
+    else sys.exit(2)
 
 def GetPriceSelector(url):
   """
@@ -290,16 +294,7 @@ def RunIteration(r):
   modified_submissions, needs_review_submissions = CheckSubmissions(subreddit)
   # We no longer use the detailed digest of modified submissions, but I leave
   # it here in case we ever need it again.
-  if DRY_RUN:
-    # The list of things the bot would have expired is not in the moderation
-    # log because no changes were actually made. Instead, include the whole
-    # list in the digest.
-    modified_digest = MakeDigest(
-        modified_submissions,
-        (lambda sub: "#%d: [%s](%s) (%s)" %
-                     (sub.rank, sub.title, sub.permalink, sub.list_price)),
-        u"Marked %d submission%s as expired:\n\n%s")
-  else:
+  if not DRY_RUN:
     # Just tell the mods to look at the mod log to see what was expired.
     if len(modified_submissions) != 1:
       plural = "s"
@@ -314,9 +309,19 @@ def RunIteration(r):
       (lambda sub: "#%d: ([direct link](%s)) [%s](%s)" %
                    (sub.rank, sub.url, sub.title, sub.permalink)),
       "Human review needed for %d new submission%s:\n\n%s")
+  else:
+    # The list of things the bot would have expired is not in the moderation
+    # log because no changes were actually made. Instead, include the whole
+    # list in the digest.
+    modified_digest = MakeDigest(
+        modified_submissions,
+        (lambda sub: "#%d: [%s](%s) (%s)" %
+                     (sub.rank, sub.title, sub.permalink, sub.list_price)),
+        u"Marked %d submission%s as expired:\n\n%s")
 
-  r.send_message(DIGEST_RECIPIENT, "Bot Digest",
-      modified_digest + "\n\n" + needs_review_digest)
+  if not QUIET:
+    r.send_message(DIGEST_RECIPIENT, "Bot Digest",
+        modified_digest + "\n\n" + needs_review_digest)
 
 if __name__ == "__main__":
   # useragent string
