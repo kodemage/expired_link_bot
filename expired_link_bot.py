@@ -31,18 +31,19 @@ import sys
 import time
 import urllib2
 
-TEST_DATA = False  # Set to True to run over /r/chtorrr
-DRY_RUN = True  # Set to False to make actual changes
-
-USERNAME = "expired_link_bot"
-PASSWORD = ""  # Remember to put in the password when actually using this!
-
-if DRY_RUN or TEST_DATA:
-  DIGEST_RECIPIENT = "penguinland"  # Send test digests only to me.
-else:
-  DIGEST_RECIPIENT = "/r/FreeEbooks"  # Send the real digest to the mods
-
-MAX_SUBMISSIONS = 200  # Number of submissions to examine; size of caches
+argv = sys.argv[1:]
+argv.reverse
+while xx = argv.pop:
+    if xx == '-u': USERNAME = argv.pop
+    elif xx == '-p': PASSWORD = argv.pop
+    elif xx == '-m': DIGEST_RECIPIENT = argv.pop
+    elif xx == '-r': SUBREDDIT = argv.pop
+    elif xx == '-x': DRY_RUN = False
+    elif xx == '-v': VERBOSE = True
+    elif xx == '-q': QUIET = True
+    elif xx == '-s' && argv[0] == '^\d+$': MAX_SUBMISSIONS = argv.pop
+      
+if not MAX_SUBMISSIONS: MAX_SUBMISSIONS == 200  # Number of submissions to examine; size of caches
 
 NEEDS_REVIEW_CACHE_FILE = "needs_review_cache.txt"
 ALREADY_EXPIRED_CACHE_FILE = "already_expired_cache.txt"
@@ -284,11 +285,8 @@ def RunIteration(r):
   stuff from the subreddit, find the expired submissions, and send an update to
   the mods. This returns nothing.
   """
-  if TEST_DATA:
-    subreddit = r.get_subreddit("chtorrr")
-  else:
-    subreddit = r.get_subreddit("freeebooks")
 
+  subreddit = r.get_subreddit(SUBREDDIT)
   modified_submissions, needs_review_submissions = CheckSubmissions(subreddit)
   # We no longer use the detailed digest of modified submissions, but I leave
   # it here in case we ever need it again.
